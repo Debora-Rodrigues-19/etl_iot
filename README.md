@@ -11,7 +11,8 @@ Este projeto realiza a extração de dados de sensores conectados à plataforma 
 - Padronização dos campos (ex: `temperature` → `temperatura`)
 - Conversão de timestamp UNIX para `data` e `hora`
 - Inserção dos dados normalizados em um banco MariaDB
-- Interface de linha de comando com `click` (parâmetros do ThingsBoard e do banco)
+- Interface de linha de comando com `click`
+- Totalmente containerizado via Docker
 
 ---
 
@@ -19,22 +20,23 @@ Este projeto realiza a extração de dados de sensores conectados à plataforma 
 
 - Python 3.8+
 - ThingsBoard com sensores já registrados
-- Banco de dados MariaDB/MySQL com tabela `sensores` criada
+- Banco de dados MariaDB/MySQL acessível
+- Docker instalado
 
 ---
 
-## 📦 Instalação
+## 📦 Instalação e Build
 
-1. Clone este repositório:
+1. Clone o repositório:
 ```bash
 git clone https://github.com/Debora-Rodrigues-19/etl_iot/blob/main/etl_iot.py
 cd etl-thingsboard-mariadb
 ````
 
-2. Instale as dependências:
+2. Build da imagem Docker:
 
 ```bash
-pip install requests mysql-connector-python click
+docker build -t etl-iot-job .
 ```
 
 ---
@@ -60,66 +62,69 @@ CREATE TABLE sensores (
 
 ---
 
-## ⚙️ Como usar
+## ⚙️ Como executar o ETL
 
-Você pode executar o ETL de forma manual via CLI com os parâmetros:
+### ✅ Execução direta com parâmetros via linha de comando
 
 ```bash
-python etl.py \
+docker run --rm etl-iot-job \
   --username debora9rodrigues@gmail.com \
-  --password senha@123# \
-  --tb-url http://home-automation.lonk-chinstrap.ts.net:8080 \
+  --password Iot@25 \
+  --tb-url http://192.168.0.48:8080 \
   --db-user root \
   --db-password casaos \
-  --db-host 100.121.241.59 \
+  --db-host 192.168.0.48 \
   --db-port 3307 \
   --db-name Iot
 ```
 
-Ou de forma interativa (ele irá pedir os dados no terminal):
+### 💬 Ou modo interativo:
 
 ```bash
-python etl.py
+docker run -it --rm etl-iot-job
 ```
+
+---
+
+## 🧠 Parâmetros CLI
+
+| Parâmetro       | Descrição                          |
+| --------------- | ---------------------------------- |
+| `--username`    | Usuário do ThingsBoard             |
+| `--password`    | Senha do ThingsBoard               |
+| `--tb-url`      | URL da instância ThingsBoard       |
+| `--db-user`     | Usuário do banco MariaDB           |
+| `--db-password` | Senha do banco                     |
+| `--db-host`     | Host do banco (ex: `192.168.0.48`) |
+| `--db-port`     | Porta do banco (ex: `3307`)        |
+| `--db-name`     | Nome do banco de dados             |
 
 ---
 
 ## 📁 Exemplo de saída
 
 ```bash
-⏳ Iniciando coleta de dados de http://home-automation.lonk-chinstrap.ts.net:8080 com usuário 'debora9rodrigues@gmail.com'
+⏳ Iniciando coleta de dados de http://192.168.0.48:8080 com usuário 'debora9rodrigues@gmail.com'
 2 linha(s) inserida(s) com sucesso.
 ```
 
 ---
 
-## 🧠 Parametrização CLI
+## 🔄 Agendamento
 
-| Parâmetro       | Descrição                           |
-| --------------- | ----------------------------------- |
-| `--username`    | Usuário do ThingsBoard              |
-| `--password`    | Senha do ThingsBoard                |
-| `--tb-url`      | URL da instância do ThingsBoard     |
-| `--db-user`     | Usuário do banco MariaDB            |
-| `--db-password` | Senha do banco                      |
-| `--db-host`     | Host do banco (padrão: `localhost`) |
-| `--db-port`     | Porta do banco (padrão: `3306`)     |
-| `--db-name`     | Nome do banco de dados              |
+Você pode agendar a execução deste container com:
+
+* `cron` no host
+* `watch` para testes
+* `kubernetes cronjob` ou orquestradores como `Airflow`, `Dagster`, etc.
 
 ---
 
-## ⏱️ Agendamento
+## 🛠️ Futuras melhorias
 
-Você pode usar ferramentas como:
-
-* `cron` (Linux/macOS)
-* `schedule` (Python – se ativado no script)
-
----
-
-## ✨ Contribuições
-
-Sugestões e melhorias são bem-vindas!
+* Suporte a `.env` e `docker-compose`
+* Agendamento interno com `schedule`
+* Exportação para formatos CSV/Parquet
 
 ---
 
@@ -127,3 +132,4 @@ Sugestões e melhorias são bem-vindas!
 
 MIT License
 
+```
