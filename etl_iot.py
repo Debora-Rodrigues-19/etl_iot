@@ -3,15 +3,6 @@ import requests
 import mysql.connector
 from datetime import datetime
 
-# === CONFIGURAÇÃO DO BANCO DE DADOS ===
-DB_CONFIG = {
-    'user': 'root',
-    'password': 'casaos',
-    'host': '100.121.241.59',
-    'port': 3307,
-    'database': 'Iot'
-}
-
 # Dispositivos fixos (ThingsBoard device_id → nome)
 dispositivos = {
     "sensor_ambiente_externo": "5b15f620-631e-11f0-a435-0721ea7777c7",
@@ -19,8 +10,8 @@ dispositivos = {
 }
 
 # === INSERÇÃO NO BANCO ===
-def inserir_dados(dados_telemetria):
-    conn = mysql.connector.connect(**DB_CONFIG)
+def inserir_dados(dados_telemetria, db_config):
+    conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
 
     for row in dados_telemetria:
@@ -52,8 +43,22 @@ def inserir_dados(dados_telemetria):
 @click.option('--username', prompt=True, help='Usuário da ThingsBoard')
 @click.option('--password', prompt=True, hide_input=True, help='Senha da ThingsBoard')
 @click.option('--tb-url', prompt='URL do ThingsBoard', help='URL da instância ThingsBoard')
-def main(username, password, tb_url):
+@click.option('--db-user', prompt='Usuário do banco', help='Usuário do banco MariaDB')
+@click.option('--db-password', prompt=True, hide_input=True, help='Senha do banco MariaDB')
+@click.option('--db-host', default='localhost', help='Host do banco (padrão: localhost)')
+@click.option('--db-port', default=3306, help='Porta do banco (padrão: 3306)')
+@click.option('--db-name', prompt='Nome do banco', help='Nome do banco de dados')
+def main(username, password, tb_url, db_user, db_password, db_host, db_port, db_name):
     print(f"⏳ Iniciando coleta de dados de {tb_url} com usuário '{username}'")
+
+    # Constrói configuração do banco com os parâmetros do CLI
+    db_config = {
+        'user': db_user,
+        'password': db_password,
+        'host': db_host,
+        'port': db_port,
+        'database': db_name
+    }
 
     auth_url = f"{tb_url}/api/auth/login"
     auth_payload = {"username": username, "password": password}
@@ -107,7 +112,7 @@ def main(username, password, tb_url):
                 print(f"❌ Erro ao obter telemetria para {nome_sensor}: {response.text}")
 
         if dados_telemetria:
-            inserir_dados(dados_telemetria)
+            inserir_dados(dados_telemetria, db_config)
         else:
             print("⚠️ Nenhum dado para inserir.")
     else:

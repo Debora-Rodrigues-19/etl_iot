@@ -11,7 +11,7 @@ Este projeto realiza a extração de dados de sensores conectados à plataforma 
 - Padronização dos campos (ex: `temperature` → `temperatura`)
 - Conversão de timestamp UNIX para `data` e `hora`
 - Inserção dos dados normalizados em um banco MariaDB
-- Interface de linha de comando com `click` (parâmetros dinâmicos)
+- Interface de linha de comando com `click` (parâmetros do ThingsBoard e do banco)
 
 ---
 
@@ -27,7 +27,7 @@ Este projeto realiza a extração de dados de sensores conectados à plataforma 
 
 1. Clone este repositório:
 ```bash
-git clone https://github.com/Debora-Rodrigues-19/etl_iot
+git clone https://github.com/Debora-Rodrigues-19/etl_iot/blob/main/etl_iot.py
 cd etl-thingsboard-mariadb
 ````
 
@@ -39,7 +39,7 @@ pip install requests mysql-connector-python click
 
 ---
 
-## 🗃️ Estrutura esperada da tabela `sensores`
+## 🗃️ Estrutura da tabela `sensores`
 
 ```sql
 CREATE TABLE sensores (
@@ -62,49 +62,68 @@ CREATE TABLE sensores (
 
 ## ⚙️ Como usar
 
-### 📌 Executar manualmente
+Você pode executar o ETL de forma manual via CLI com os parâmetros:
 
 ```bash
-python etl.py --username seu_email@dominio.com --password sua_senha --tb-url http://seu-servidor-thingsboard:porta
+python etl.py \
+  --username debora9rodrigues@gmail.com \
+  --password senha@123# \
+  --tb-url http://home-automation.lonk-chinstrap.ts.net:8080 \
+  --db-user root \
+  --db-password casaos \
+  --db-host 100.121.241.59 \
+  --db-port 3307 \
+  --db-name Iot
 ```
 
-Ou de forma interativa:
+Ou de forma interativa (ele irá pedir os dados no terminal):
 
 ```bash
 python etl.py
-# será solicitado:
-# - usuário
-# - senha
-# - URL da instância ThingsBoard
 ```
-
----
-
-## ⏱️ Agendamento (opcional)
-
-Para agendar a execução automática a cada 10 minutos, use:
-
-* `cron` (Linux/macOS)
-* `schedule` (Python) → versão com agendamento pode ser implementada separadamente.
 
 ---
 
 ## 📁 Exemplo de saída
 
 ```bash
-⏳ Iniciando coleta de dados de http://localhost:8080 com usuário 'juanengml@gmail.com'
+⏳ Iniciando coleta de dados de http://home-automation.lonk-chinstrap.ts.net:8080 com usuário 'debora9rodrigues@gmail.com'
 2 linha(s) inserida(s) com sucesso.
 ```
 
 ---
 
+## 🧠 Parametrização CLI
+
+| Parâmetro       | Descrição                           |
+| --------------- | ----------------------------------- |
+| `--username`    | Usuário do ThingsBoard              |
+| `--password`    | Senha do ThingsBoard                |
+| `--tb-url`      | URL da instância do ThingsBoard     |
+| `--db-user`     | Usuário do banco MariaDB            |
+| `--db-password` | Senha do banco                      |
+| `--db-host`     | Host do banco (padrão: `localhost`) |
+| `--db-port`     | Porta do banco (padrão: `3306`)     |
+| `--db-name`     | Nome do banco de dados              |
+
+---
+
+## ⏱️ Agendamento
+
+Você pode usar ferramentas como:
+
+* `cron` (Linux/macOS)
+* `schedule` (Python – se ativado no script)
+
+---
+
 ## ✨ Contribuições
 
-Sugestões e melhorias são bem-vindas!!1
+Sugestões e melhorias são bem-vindas!
 
 ---
 
 ## 🛡️ Licença
 
-MIT License.
+MIT License
 
